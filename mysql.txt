@@ -1,0 +1,11 @@
+#Mysql修改root密码
+#mysql命令行
+update user set password=PASSWORD("123456") where User='root';
+flush privileges;
+
+#或者使用mysqladmin
+mysqladmin -u root -p'abc' password '123456'
+
+
+#出现talbe xxx is read only
+mysqladmin -u root -p flush-tables

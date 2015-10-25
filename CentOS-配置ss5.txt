@@ -1,0 +1,39 @@
+#配置编译环境
+yum -y install gcc automake make
+#安装socks5必要的包
+yum -y install pam-devel openldap-devel cyrus-sasl-devel openssl-devel
+#下载，编译安装ss5（socks5）
+wget http://liquidtelecom.dl.sourceforge.net/project/ss5/ss5/3.8.9-8/ss5-3.8.9-8.tar.gz
+tar zxvf ss5-3.8.9-8.tar.gz
+cd ss5-3.8.9
+./configure
+make
+make install
+
+#启动ss5服务
+chmod +x /etc/init.d/ss5
+/etc/init.d/ss5 start
+
+#增强配置，设置账户登录/
+#修改配置文件：/etc/opt/ss5/ss5.conf ，取消注释，修改如下
+
+#       SHost           SPort           Authentication
+#
+auth    0.0.0.0/0               -              u
+permit u        0.0.0.0/0       -       0.0.0.0/0       -       -       -       -       -
+
+#在 /etc/opt/ss5/ss5.passwd 中添加 用户名和密码 如：
+test 123123
+
+#在/etc/rc.d/init.d/ss5 文件修改自定义端口，默认为1080
+daemon /usr/sbin/ss5 -m -t $SS5_OPTS -b 0.0.0.0:10888
+#在/etc/sysconfig/ss5 中，取消注释。 
+SS5_OPTS=” -u root”
+
+#重启服务
+service ss5 restart
+
+#最后加入开机自动启动
+chkconfig --add ss5
+chkconfig --level 345 ss5 on
+

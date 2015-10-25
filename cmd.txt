@@ -1,0 +1,1 @@
+nslookup -q=txt 613713.com
