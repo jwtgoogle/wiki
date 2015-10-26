@@ -1,0 +1,115 @@
+RESTful架构安全-基于RESTful的<UC API>的安全评估
+
+0X01	RESTful架构风格
+	REST (or REpresentational State Transfer) is a means of expressing specific entities in a system by URL path elements. REST is not an architecture but it is an architectural style to build services on top of the Web. REST allows interaction with a web-based system via simplified URLs rather than complex request body or POST parameters to request specific items from the system. This document serves as a guide (although not exhaustive) of best practices to help REST-based services.
+	Representational State Transfer（REST）是一种互联网软件的架构原则。
+	1、资源（Resources）：
+		REST的名称"表现层状态转化"中，省略了主语。"表现层"其实指的是"资源"（Resources）的"表现层"。
+		所谓"资源"，就是网络上的一个实体，或者说是网络上的一个具体信息。
+	2、表现层（Representation）：
+		"资源"是一种信息实体，它可以有多种外在表现形式。我们把"资源"具体呈现出来的形式，叫做它的"表现层"（Representation）
+	3、状态转化（State Transfer）：
+		，如果客户端想要操作服务器，必须通过某种手段，让服务器端发生"状态转化"（State Transfer）。而这种转化是建立在表现层之上的，所以就是"表现层状态转化"。
+		客户端用到的手段，只能是HTTP协议。具体来说，就是HTTP协议里面，四个表示操作方式的动词：GET、POST、PUT、DELETE。它们分别对应四种基本操作：GET用来获取资源，POST用来新建资源（也可以用于更新资源），PUT用来更新资源，DELETE用来删除资源。
+	综述：
+		综合上面的解释，我们总结一下什么是RESTful架构：
+		（1）每一个URI代表一种资源；
+		（2）客户端和服务器之间，传递这种资源的某种表现层；
+		（3）客户端通过四个HTTP动词，对服务器端资源进行操作，实现"表现层状态转化"。
+	误区：
+		最常见的一种设计错误，就是URI包含动词
+			GET /posts/show/1
+			GET /posts/1
+
+			POST /accounts/1/transfer/500/to/2
+			POST /transaction
+
+			from=1&to=2&amount=500.00
+		另一个设计误区，就是在URI中加入版本号
+			http://www.example.com/app/1.0/foo
+			http://www.example.com/app/1.1/foo
+			http://www.example.com/app/2.0/foo
+			因为不同的版本，可以理解成同一种资源的不同表现形式，所以应该采用同一个URI。版本号可以在HTTP请求头信息的Accept字段中进行区分
+			Accept: vnd.example-com.foo+json; version=1.0
+
+0x03	REST安全测试面临的挑战
+
+	1、RESTful web services关键属性
+		（1）使用HTTP方法（GET，POST，PUT和DELETE）作为主要动词为所请求的操作
+		（2）没有标准的参数格式
+		（3）request 和 response 均使用json或xml等结构化参数
+		（4）自定义的认证和会话管理
+		（5）缺乏正规的文档
+
+	2、安全测试REST Web服务所面临的挑战
+		（1）攻击面确认困难
+			1）没有公开可用无需授权认证的功能接口
+			2）通常集成在客户端中，而不是简单的网页链接
+			3）客户端通常不是web应用程序，难以激活接口测试，甚至找到相关代码
+		（2）参数弱标准难以确定
+			有的在头部Header里，有的在URL上，有的在POST里
+		（3）参数众多，有的接口多大数十个参数，Fuzzing需要大量时间
+		（4）自定义的验证机制导致需要一定逆向工程，现有的扫描器难以跟踪这样的一个认证会话
+	3、如何对REST Web服务进行安全测试
+		（1）通过文档文件来确定供给面，如果允许白盒测试可能会更好，可以确保攻击面的全覆盖。
+			1）正式的服务描述，wiki文档
+			2）开发人员文档指南，开发SDK
+			3）基于REST架构的应用程序、源码、配置文件
+		（2）通过代理（proxy）收集尽可能全面的request请求，这是安全测试的关键步骤，也对与确定基于REST的应用程序的攻击面至关重要。
+		（3）分析收集的请求，以确定攻击面
+		（4）验证非标准参数
+		（5）对于收集到的REST API接口进行fuzzing
+		（6）以上分析和Fuzzing都是基于认证授权的
+
+0x02 	RESTfull 架构的安全需求点
+
+	1、认证和会话管理（Authentication and session management）
+		REST Web服务应使用基于会话的认证，无论是通过建立通过POST会话令牌或通过使用一个API密钥作为POST的身体参数或作为cookie。用户名，密码，会话令牌和API密钥不应该出现在URL。
+		https://example.com/controller/<id>/action?apiKey=a53f435643de32
+
+	2、会话状态保护（Protect Session State）
+		（1）确保服务端仅通过令牌凭据来保持客户端状态
+		（2）防重放攻击（Anti-replay)
+		（3）抗解密（Anti-decrypt)
+	3、授权（Authorization）
+		（1）防农场攻击（Anti-farming）
+		（2）保护HTTP方法（Protect HTTP methods）
+		（3）请求方法白名单化（Whitelist allowable methods）
+		（4）保护特权操作和敏感资源（Protect privileged actions and sensitive resource collections）
+		（5）防止跨站请求伪造（Protect against cross-site request forgery）
+		（6）不安全的直接对象引用（Insecure direct object references）
+			https://example.com/account/325365436/transfer?amount=$100.00&toAccount=473846376
+	4、输入验证（Input validation）
+		（1）输入验证原则
+			Assist the user > Reject input > Sanitize (filtering) > No input validation
+		（2）安全解析（Secure parsing）
+		（3）强类型（Strong typing）
+		（4）验证输入的内容类型（Validate incoming content-types）
+		（5）验证响应类型（Validate response types）
+		（6）XML输入验证（XML input validation）
+		（7）框架提供的验证（Framework-Provided Validation）
+		（8）防SQL注入攻击（Anti-Sql Injection）
+
+	5、输出编码（Output encoding）
+		（1）发送安全的HTTP Header（Send security headers）
+		（2）JSON encoding
+		（3）XML encoding
+		（4）防XSS攻击(Anti-Cross Site Script)
+	6、加密（Cryptography）
+		（1）传输安全（Data in transit）
+			数据传输安全。非常传输公共信息完全公开，必须使用TLS/SSL等安全传输，特别是其中的凭证认证，敏感的更新和删除等敏感操作，虽然有些延时等开销，但增加了安全作为补偿是值得的。
+		（2）存储安全（Data in storage）
+			数据存储安全。账号密码、密保密码，手机、身份证、邮箱等安全存储。
+
+0x03	基于RESTful的<UC API>的安全评估方案
+
+
+
+
+0xff	Related articles
+	http://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm
+	https://www.owasp.org/index.php/REST_Assessment_Cheat_Sheet#The_challenge_of_security_testing_RESTful_web_services
+	https://www.owasp.org/index.php/REST_Security_Cheat_Sheet
+	http://www.mcafee.com/cn/resources/reports/rp-hacking-human-os-summary.pdf?view=legacy
+	http://bubuko.com/infodetail-202408.html
+

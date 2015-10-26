@@ -1,0 +1,71 @@
+
+
+0x01	OAuth2.0协议简介
+	
+	1.1	Roles
+		OAuth defines four roles:
+			resource owner
+			resource server
+			client
+			authorization server
+
+	名词定义
+		Third-party application：第三方应用程序，本文中又称"客户端"（client）
+		HTTP service：HTTP服务提供商，本文中简称"服务提供商"
+		Resource Owner：资源所有者，本文中又称"用户"（user）
+		User Agent：用户代理，本文中就是指浏览器
+		Authorization server：认证服务器，即服务提供商专门用来处理认证的服务器
+		Resource server：资源服务器，即服务提供商存放用户生成的资源的服务器。它与认证服务器，可以是同一台服务器，也可以是不同的服务器
+
+
+0x02	运行流程
+	
+	OAuth 2.0的运行流程如下图，摘自RFC 6749：
+
+	+--------+                               +---------------+
+	|        |--(A)- Authorization Request ->|   Resource    |
+	|        |                               |     Owner     |
+	|        |<-(B)-- Authorization Grant ---|               |
+	|        |                               +---------------+
+	|        |
+	|        |                               +---------------+
+	|        |--(C)-- Authorization Grant -->| Authorization |
+	| Client |                               |     Server    |
+	|        |<-(D)----- Access Token -------|               |
+	|        |                               +---------------+
+	|        |
+	|        |                               +---------------+
+	|        |--(E)----- Access Token ------>|    Resource   |
+	|        |                               |     Server    |
+	|        |<-(F)--- Protected Resource ---|               |
+	+--------+                               +---------------+
+
+	             Figure 1: Abstract Protocol Flow
+
+	（A）用户打开客户端以后，客户端要求用户给予授权。
+	（B）用户同意给予客户端授权。
+	（C）客户端使用上一步获得的授权，向认证服务器申请令牌。
+	（D）认证服务器对客户端进行认证以后，确认无误，同意发放令牌。
+	（E）客户端使用令牌，向资源服务器申请获取资源。
+	（F）资源服务器确认令牌无误，同意向客户端开放资源。
+
+0x03	客户端的授权模式
+
+	客户端必须得到用户的授权（authorization grant），才能获得令牌（access token）。OAuth 2.0定义了四种授权方式
+
+	01	授权码模式（authorization code）
+		授权码模式（authorization code）是功能最完整、流程最严密的授权模式。它的特点就是通过客户端的后台服务器，与"服务提供商"的认证服务器进行互动。
+
+	02	简化模式（implicit）
+
+	03	密码模式（resource owner password credentials）
+
+	04	客户端模式（client credentials）
+
+
+0xff	References
+	http://www.rfcreader.com/#rfc6749 (The OAuth 2.0 Authorization Framework)
+	https://github.com/jeansfish/RFC6749.zh-cn
+	https://github.com/jeansfish/RFC6750.zh-cn
+
+

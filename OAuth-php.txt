@@ -1,0 +1,4 @@
+
+0xff	References
+	http://code.google.com/p/oauth-php/
+	http://blog.csdn.net/newjueqi/article/details/7845282
